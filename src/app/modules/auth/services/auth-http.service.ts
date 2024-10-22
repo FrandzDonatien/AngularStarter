@@ -23,7 +23,7 @@ export class AuthHTTPService extends BaseHttpService{
   }
 
   getUserByToken = (): Observable<HttpResponseModel<UserModel>> => {
-    return this.http.post<HttpResponseModel<UserModel>>(``,{},{
+    return this.http.post<HttpResponseModel<UserModel>>(`${this.API_USERS_URL}/me`,{},{
       headers: this.httpHeader()
     })
   }
