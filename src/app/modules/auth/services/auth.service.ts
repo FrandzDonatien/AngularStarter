@@ -1,10 +1,13 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthHTTPservice } from './auth-http.service';
+import {Injectable, OnDestroy} from '@angular/core';
+import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
+import {catchError, finalize, map, switchMap} from 'rxjs/operators';
+import {UserModel} from '../../../models/user.model';
+import {Router} from '@angular/router';
+import {AuthHTTPService} from "./auth-http.service";
+import {JwtModel} from "../../../models/jwt.model";
+import {HttpResponseModel} from "../../../models/http-response.model";
 import { environment } from '../../../../environments/environment.dev';
-import { BehaviorSubject, finalize, map, Observable, Subscription } from 'rxjs';
-import { UserModel } from '../../../models/user.model';
-import { HttpResponseModel } from '../../../models/http-response.model';
+import { removeLocalStorageData } from '../../../../assets/ts/local-storage.utils';
 
 
 export type UserType = UserModel | undefined;
@@ -14,7 +17,6 @@ export type UserType = UserModel | undefined;
 })
 export class AuthService implements OnDestroy {
 
-  
   // public fields
   isLoading$: Observable<boolean>;
   currentUser$: Observable<UserType>;
@@ -26,7 +28,7 @@ export class AuthService implements OnDestroy {
   private authLocalStorageToken = `${environment.appVersion}-${environment.USERDATA_KEY}`;
 
   constructor(
-    private authHttpService: AuthHTTPservice,
+    private authHttpService: AuthHTTPService,
     private router: Router,
   ) {
     // this.currentUserRole = new BehaviorSubject<string[]>([]);
@@ -41,12 +43,13 @@ export class AuthService implements OnDestroy {
 
 
   get currentUserValue(): UserType {
-    return undefined;
+    return this.currentUserSubject.value;;
   }
 
 
   logout = () =>{
-
+    this.router.navigate(['/auth/login'], {queryParams: {}})
+      .then(() => removeLocalStorageData(this.authLocalStorageToken));
   }
 
   getUserByToken = () : Observable<UserType> =>{
@@ -70,5 +73,12 @@ export class AuthService implements OnDestroy {
     this.unsubscribe.forEach((sub) => sub.unsubscribe());
   }
 
-
+  private setAuthFromLocalStorage(auth: JwtModel): boolean {
+    // store auth authToken/refreshToken/epiresIn in local storage to keep user logged in between page refreshes
+    if (auth && auth.accessToken) {
+      localStorage.setItem(this.authLocalStorageToken, JSON.stringify(auth));
+      return true;
+    }
+    return false;
+  }
 }

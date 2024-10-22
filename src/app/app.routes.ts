@@ -10,8 +10,8 @@ export const routes: Routes = [
 
   {
     path: '',
-    // canActivate: [authGuard],
     loadChildren: () => import('./layouts/layouts.module').then((m) => m.LayoutsModule),
+    canActivate: [authGuard],
   },
   {path: '**', redirectTo: 'error/404'},
 ];

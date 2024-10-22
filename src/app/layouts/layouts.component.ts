@@ -11,7 +11,6 @@ export class LayoutsComponent implements OnInit, OnDestroy {
   private unsubscribe: Subscription[] = [];
 
   ngOnDestroy(): void {
-    
   }
 
 
